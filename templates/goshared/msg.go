@@ -1,6 +1,7 @@
 package goshared
 
 const msgTpl = `
+{{ if not (ignored .) -}}
 {{ if disabled . -}}
 	{{ cmt "Validate is disabled for " (msgTyp .) ". This method will always return nil." }}
 {{- else -}}
@@ -214,4 +215,5 @@ var _ interface{
 	{{ end }}{{ end }}
 
 {{ end }}{{ end }}
+{{- end -}}
 `

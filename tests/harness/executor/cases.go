@@ -1481,6 +1481,9 @@ var messageCases = []TestCase{
 	{"message - disabled - valid", &cases.MessageDisabled{Val: 456}, nil, true},
 	{"message - disabled - valid (invalid field)", &cases.MessageDisabled{Val: 0}, nil, true},
 
+	{"message - ignored - valid", &cases.MessageIgnored{Val: 456}, nil, true},
+	{"message - ignored - valid (invalid field)", &cases.MessageIgnored{Val: 0}, nil, true},
+
 	{"message - field - valid", &cases.Message{Val: &cases.TestMsg{Const: "foo"}}, nil, true},
 	{"message - field - valid (unset)", &cases.Message{}, nil, true},
 	{"message - field - invalid", &cases.Message{Val: &cases.TestMsg{}}, nil, false},
