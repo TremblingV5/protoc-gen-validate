@@ -11,7 +11,7 @@ GO_IMPORT_SPACES := ${VALIDATE_IMPORT},\
 	Mgoogle/protobuf/struct.proto=github.com/golang/protobuf/ptypes/struct,\
 	Mgoogle/protobuf/timestamp.proto=github.com/golang/protobuf/ptypes/timestamp,\
 	Mgoogle/protobuf/wrappers.proto=github.com/golang/protobuf/ptypes/wrappers,\
-	Mgoogle/protobuf/descriptor.proto=github.com/golang/protobuf/protoc-gen-go/descriptor
+	Mgoogle/protobuf/descriptor.proto=github.com/golang/protobuf/protoc-gen-go/descriptor,\
 GO_IMPORT:=$(subst $(space),,$(GO_IMPORT_SPACES))
 
 .PHONY: build
