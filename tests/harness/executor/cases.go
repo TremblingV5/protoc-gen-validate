@@ -228,18 +228,6 @@ var doubleCases = []TestCase{
 	{"double - exclusive gte & lte - in mask - invalid", &cases.DoubleExGTELTE{Val: 200}, mkMask("val"), false, "invalid DoubleExGTELTE.Val: value must be outside range (128, 256)"},
 }
 
-{"int32 - const - invalid", &cases.Int32Const{Val: 2}, false},
-{"int32 - in - invalid", &cases.Int32In{Val: 5}, false},
-{"int32 - not in - invalid", &cases.Int32NotIn{Val: 0}, false},
-{"int32 - lt - invalid", &cases.Int32LT{Val: 1}, false},
-{"int32 - lte - invalid", &cases.Int32LTE{Val: 65}, false},
-{"int32 - gt - invalid", &cases.Int32GT{Val: 15}, false},
-{"int32 - gte - invalid", &cases.Int32GTE{Val: 7}, false},
-{"int32 - gt & lt - invalid (min)", &cases.Int32GTLT{Val: 0}, false},
-{"int32 - exclusive gt & lt - invalid (min)", &cases.Int32ExLTGT{Val: 0}, false},
-{"int32 - gte & lte - invalid (below)", &cases.Int32GTELTE{Val: 100}, false},
-{"int32 - exclusive gte & lte - invalid", &cases.Int32ExGTELTE{Val: 200}, false},
-
 var int32Cases = []TestCase{
 	{"int32 - none - valid", &cases.Int32None{Val: 123}, nil, true, ""},
 
@@ -1770,24 +1758,6 @@ var wrapperCases = []TestCase{
 	{"wrapper - uint32 - no mask - valid", &cases.WrapperUInt32{Val: &wrappers.UInt32Value{Value: 0}}, mkMask(), true, ""},
 	{"wrapper - uint32 - in mask - invalid", &cases.WrapperUInt32{Val: &wrappers.UInt32Value{Value: 0}}, mkMask("val"), false, "invalid WrapperUInt32.Val: value must be greater than 0"},
 
-
-
-	{"wrapper - bool - invalid", &cases.WrapperBool{Val: &wrappers.BoolValue{Value: false}}, false},
-	{"wrapper - string - invalid", &cases.WrapperString{Val: &wrappers.StringValue{Value: "fizzbuzz"}}, false},
-	{"wrapper - bytes - invalid", &cases.WrapperBytes{Val: &wrappers.BytesValue{Value: []byte("x")}}, false},
-	{"wrapper - required - string - invalid", &cases.WrapperRequiredString{Val: &wrappers.StringValue{Value: "foo"}}, false},
-	{"wrapper - required - string - invalid (empty)", &cases.WrapperRequiredString{}, false},
-	{"wrapper - required - string (empty) - invalid", &cases.WrapperRequiredEmptyString{Val: &wrappers.StringValue{Value: "foo"}}, false},
-	{"wrapper - required - string (empty) - invalid (empty)", &cases.WrapperRequiredEmptyString{}, false},
-	{"wrapper - optional - string (uuid) - invalid", &cases.WrapperOptionalUuidString{Val: &wrappers.StringValue{Value: "foo"}}, false},
-	{"wrapper - required - float - invalid", &cases.WrapperRequiredFloat{Val: &wrappers.FloatValue{Value: -5}}, false},
-	{"wrapper - required - float - invalid (empty)", &cases.WrapperRequiredFloat{}, false},
-
-
-
-
-
-
 	{"wrapper - bool - valid", &cases.WrapperBool{Val: &wrappers.BoolValue{Value: true}}, nil, true, ""},
 	{"wrapper - bool - valid (empty)", &cases.WrapperBool{Val: nil}, nil, true, ""},
 	{"wrapper - bool - invalid", &cases.WrapperBool{Val: &wrappers.BoolValue{Value: false}}, nil, false, "invalid WrapperBool.Val: value must equal true"},
@@ -2101,6 +2071,6 @@ var kitchenSink = []TestCase{
 			Nested: &cases.ComplexTestMsg{Another: &cases.ComplexTestMsg{Const: "abcd", IntConst: 23}},
 			AThird: &cases.ComplexTestMsg{Another: &cases.ComplexTestMsg{IntConst: 5, Const: "invalid"}},
 		}}, mkMask("val.nested.another.const","val.a_third.another.int_const"), true,
-		"invalid KitchenSinkMessage.Val: embedded message failed validation | caused by: invalid ComplexTestMsg.AThird: embedded message failed validation | caused by: invalid ComplexTestMsg.Const: value must equal abcd"
+		"invalid KitchenSinkMessage.Val: embedded message failed validation | caused by: invalid ComplexTestMsg.AThird: embedded message failed validation | caused by: invalid ComplexTestMsg.Const: value must equal abcd",
 	},
 }

@@ -16,7 +16,6 @@ const strTpl = `
 	}
 	{{ else if $r.MinLen }}
 		{{ if $r.MaxLen }}
-<<<<<<< HEAD
 			if l := utf8.RuneCountInString({{ accessor . }}); m.maskHas(mask, "{{ $f.Name }}") && (l < {{ $r.GetMinLen }} || l > {{ $r.GetMaxLen }}) {
 				return {{ err . (t "string.len_between" "value length must be between {{$1}} and {{$2}} runes, inclusive" $r.GetMinLen $r.GetMaxLen) }}
 			}
@@ -125,7 +124,7 @@ const strTpl = `
 
 	{{ if $r.Pattern }}
 	if m.maskHas(mask, "{{ $f.Name }}") && !{{ lookup $f "Pattern" }}.MatchString({{ accessor . }}) {
-		return {{ err . (t "string.pattern" "value does not match regex pattern {{$1}}" (lit $r.GetPattern)) }}
+		return {{ err . (tOverride "string.pattern" $r.GetPatternMessage "value does not match regex pattern {{$1}}" (lit $r.GetPattern)) }}
 	}
 {{ end }}
 `

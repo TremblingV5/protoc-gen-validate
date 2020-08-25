@@ -114,6 +114,26 @@ There are two things to notice from this example:
 Pro-Tip: By looking through the test cases at `tests/harness/executor/cases.go`, you can see
 what the error messages will look like by default and decide which ones to customize.
 
+Alternatively, for `string.pattern` constraints only, you can customize the message on a per-field basis
+within the proto definition. For a `string.pattern` field, you may also include a `string.pattern_message`
+field to override the default error message. For example,
+
+```proto
+message Person {
+  uint64 id    = 1 [(validate.rules).uint64 = {gt: 999}];
+
+  string email = 2 [(validate.rules).string = {email: true}];
+
+  string name  = 3 [(validate.rules).string = {
+                      pattern:   "^[A-Za-z',\-_.]+$",
+                      pattern_message: "value may only contain the following special characters: ',-_.",
+                   }];
+}
+```
+
+Note that we didn't include a `{{%1}}` in the `pattern_message` because we want to ignore the regex pattern
+provided, rather than show it to the end user as part of the error message.
+
 ### Examples
 
 #### Go
