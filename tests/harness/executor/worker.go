@@ -66,7 +66,9 @@ func execTestCase(tc TestCase, harnesses []Harness) (ok, skip bool) {
 
 				}
 			} else if h.TestErrMsgs && res.Reason != tc.ErrorMsg {
-				errs <- fmt.Errorf("%s: expected error = %s, but got reason %s", h.Name, tc.ErrorMsg, res.Reason)
+				errs <- fmt.Errorf("%s: expected error msg = %s, but got reason %s", h.Name, tc.ErrorMsg, res.Reason)
+			} else if h.TestI18n && res.Reason != tc.TErrorMsg {
+				errs <- fmt.Errorf("%s: expected i18n error = %s, but got reason %s", h.Name, tc.TErrorMsg, res.Reason)
 			}
 		}()
 	}

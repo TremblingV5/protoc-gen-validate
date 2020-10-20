@@ -7,15 +7,21 @@ import (
 	"github.com/theplant/cldr"
 	"html"
 	"os"
+	"path"
 	"reflect"
 	"strings"
 )
 
 func main() {
+	cwd, _ := os.Getwd()
+	os.Setenv("LANG", "fake-IT")
+	os.Setenv("PROTOC_GEN_VALIDATE_LOCALES_DIR", path.Join(cwd, "tests", "harness", "locales"))
 	I18n := i18n.New(yaml.New(os.Getenv("PROTOC_GEN_VALIDATE_LOCALES_DIR")))
 	locale := os.Getenv("LANG")
-	key := "string.pattern"
-	value := "value does not match regex pattern {{$1}}"
+	//key := "string.pattern"
+	key := "map.max_pairs"
+	//value := "value does not match regex pattern {{$1}}"
+	value := "wha"
 	pattern := "^[\\x00-\\u007f]+$"
 	fmt.Println(pattern)
 	args := []interface{}{lit(pattern)}

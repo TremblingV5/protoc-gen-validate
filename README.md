@@ -85,9 +85,9 @@ make build
   - `java`
   - `python`
 
-### Internationalization (i18n)
+### Error Customization
 
-Error messages can be localized and/or customized for your users.
+Error messages can be customized for your users.
 
 Each validation rule has a separate error message. Most error messages are simply keyed by
 their [constraint](#constraint-rules) code, e.g., `int32.lt`, `string.prefix`, or `bytes.max_len`.
@@ -95,10 +95,7 @@ However, some error messages are unique based on a combination of constraints, s
 both `string.min_len` and `string.max_len` on a field; for these, a "synthetic" translation key
 is created, such as `string.len_between`. These are documented alongside the [constraint rules](#constraint-rules).
 
-To create a new localization, create a `yaml` file with a key for the desired
-[language variant](https://en.wikipedia.org/wiki/Language_localisation#Language_tags_and_codes)
-following [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
-(e.g., `en-US`, `zh-CN`, `es-ES`). For example, to customize the English (US) error
+To create a new customization, create a `yaml` file. For example, to customize the error
 messages for the `string.len_between` and `string.pattern` rules, your file should contain:
 
 ```yaml
@@ -107,6 +104,8 @@ en-US:
     len_between: must be between {{$1}} and {{$2}} characters, inclusive
     pattern: string doesn't match expected pattern
 ```
+
+(Note that this `en-US` header is because we use an internationalization library for compile-time error customization)
 
 There are two things to notice from this example:
 1. messages may be parameterized with one or more parameters using syntax like `{{$1}}`
@@ -328,8 +327,8 @@ Check the [constraint rule comparison matrix](rule_comparison.md) for language-s
   ```
 
   *Translation notes*:
-  * The message for both `min_len` and `max_len` is `len_between`.
-  * If `min_len` and `max_len` are set to the same value, the `len` message is used.
+  * The message used when both `string.min_len` and `string.max_len` are set is `string.len_between`.
+  * If `string.min_len` and `string.max_len` are set to the same value, the `string.len` message is used.
 
 - **min_bytes/max_bytes**: these rules constrain the number of bytes in the field.
 
@@ -342,8 +341,8 @@ Check the [constraint rule comparison matrix](rule_comparison.md) for language-s
   ```
 
   *Translation notes*:
-  * The message when both `min_bytes` and `max_bytes` are set is `bytes_between`.
-  * If `min_bytes` and `max_bytes` are set to the same value, the `len_bytes` message is used.
+  * The message when both `string.min_bytes` and `string.max_bytes` are set is `string.bytes_between`.
+  * If `string.min_bytes` and `string.max_bytes` are set to the same value, the `string.len_bytes` message is used.
 
 - **pattern**: the field must match the specified [RE2-compliant][re2] regular expression. The included expression should elide any delimiters (ie, `/\d+/` should just be `\d+`).
 
@@ -583,8 +582,8 @@ Person x = 1;
   ```
 
   *Translation notes*:
-  * The message for both `min_items` and `max_items` is `items_between`.
-  * If `min_items` and `max_items` are set to the same value, the `items` message is used.
+  * The message used when both `repeated.min_items` and `repeated.max_items` are set is `repeated.items_between`.
+  * If `repeated.min_items` and `repeated.max_items` are set to the same value, the `repeated.items` message is used.
 
 - **unique**: this rule requires that all elements in the field must be unique. This rule does not support repeated messages.
 
@@ -619,8 +618,8 @@ Person x = 1;
   ```
 
   *Translation notes*:
-  * The message for both `min_pairs` and `max_pairs` is `pairs_between`.
-  * If `min_pairs` and `max_pairs` are set to the same value, the `pairs` message is used.
+  * The message used when both `maps.min_pairs` and `maps.max_pairs` are set is `maps.pairs_between`.
+  * If `maps.min_pairs` and `maps.max_pairs` are set to the same value, the `maps.pairs` message is used.
 
 - **no_sparse**: for map fields with message values, setting this rule to true disallows keys with unset values.
 
@@ -730,16 +729,16 @@ message X { google.protobuf.Int32Value age = 1 [(validate.rules).int32.gt = -1, 
     }];
   ```
 
-  *Translation notes*:
+  *Translation notes*: The following messages are used:
   * `duration.valid` - Value must be parse-able as a valid duration object
-  * `duration.between_open` - Value must be inside the open interval `(x, y)` which excludes both endpoints
-  * `duration.between_closed` - Value must be inside the closed interval `[x, y]` which includes both endpoints
-  * `duration.between_include_left` - Value must be inside the half-open interval `[x, y)` which includes the left endpoint
-  * `duration.between_include_right` - Value must be inside the half-open interval `(x, y]` which includes the right endpoint
-  * `duration.outside_open` - Value must be outside the open interval `(x, y)` which excludes both endpoints
-  * `duration.outside_closed` - Value must be outside the closed interval `[x, y]` which includes both endpoints
-  * `duration.outside_include_right` - Value must be outside the half-open interval `[x, y)` which includes the left endpoint
-  * `duration.outside_include_left` - Value must be outside the half-open interval `(x, y]` which includes the right endpoint
+  * `duration.between_open` (`lt` and `gt`) - Value must be inside the open interval `(x, y)` which excludes both endpoints
+  * `duration.between_closed` (`lte` and `gte`) - Value must be inside the closed interval `[x, y]` which includes both endpoints
+  * `duration.between_include_left` (`lt` and `gte`) - Value must be inside the half-open interval `[x, y)` which includes the left endpoint
+  * `duration.between_include_right` (`lte` and `gt`) - Value must be inside the half-open interval `(x, y]` which includes the right endpoint
+  * `duration.outside_open` (`lte` and `gte`) - Value must be outside the open interval `(x, y)` which excludes both endpoints
+  * `duration.outside_closed` (`lt` and `gt`) - Value must be outside the closed interval `[x, y]` which includes both endpoints
+  * `duration.outside_include_right` (`lte` and `gt`) - Value must be outside the half-open interval `[x, y)` which includes the left endpoint
+  * `duration.outside_include_left` (`lt` and `gte`) - Value must be outside the half-open interval `(x, y]` which includes the right endpoint
 
 - **in/not_in**: these two rules permit specifying white/blacklists for the values of a field.
 
@@ -802,16 +801,16 @@ message X { google.protobuf.Int32Value age = 1 [(validate.rules).int32.gt = -1, 
     }];
   ```
 
-  *Translation notes*:
-  * `timestamp.valid` - Value must be parse-able as a valid timestamp object
-  * `timestamp.between_open` - Value must be inside the open interval `(x, y)` which excludes both endpoints
-  * `timestamp.between_closed` - Value must be inside the closed interval `[x, y]` which includes both endpoints
-  * `timestamp.between_include_left` - Value must be inside the half-open interval `[x, y)` which includes the left endpoint
-  * `timestamp.between_include_right` - Value must be inside the half-open interval `(x, y]` which includes the right endpoint
-  * `timestamp.outside_open` - Value must be outside the open interval `(x, y)` which excludes both endpoints
-  * `timestamp.outside_closed` - Value must be outside the closed interval `[x, y]` which includes both endpoints
-  * `timestamp.outside_include_right` - Value must be outside the half-open interval `[x, y)` which includes the left endpoint
-  * `timestamp.outside_include_left` - Value must be outside the half-open interval `(x, y]` which includes the right endpoint
+  *Translation notes*: The following messages are used:
+  * `timestamp.valid` - Value must be parse-able as a valid duration object
+  * `timestamp.between_open` (`lt` and `gt`) - Value must be inside the open interval `(x, y)` which excludes both endpoints
+  * `timestamp.between_closed` (`lte` and `gte`) - Value must be inside the closed interval `[x, y]` which includes both endpoints
+  * `timestamp.between_include_left` (`lt` and `gte`) - Value must be inside the half-open interval `[x, y)` which includes the left endpoint
+  * `timestamp.between_include_right` (`lte` and `gt`) - Value must be inside the half-open interval `(x, y]` which includes the right endpoint
+  * `timestamp.outside_open` (`lte` and `gte`) - Value must be outside the open interval `(x, y)` which excludes both endpoints
+  * `timestamp.outside_closed` (`lt` and `gt`) - Value must be outside the closed interval `[x, y]` which includes both endpoints
+  * `timestamp.outside_include_right` (`lte` and `gt`) - Value must be outside the half-open interval `[x, y)` which includes the left endpoint
+  * `timestamp.outside_include_left` (`lt` and `gte`) - Value must be outside the half-open interval `(x, y]` which includes the right endpoint
 
 - **lt_now/gt_now**: these inequalities allow for ranges relative to the current time. These rules cannot be used with the absolute rules above.
 
@@ -833,9 +832,9 @@ message X { google.protobuf.Int32Value age = 1 [(validate.rules).int32.gt = -1, 
   ```
 
   *Translation notes*:
-  * If `gt_now` and `within` are both set, the `gt_now_within` message is used.
-  * If `lt_now` and `within` are both set, the `lt_now_within` message is used.
-  * If `within` is set without either `gt_now` or `lt_now`, the `within` message is used.
+  * If `timestamp.gt_now` and `timestamp.within` are both set, the `timestamp.gt_now_within` message is used.
+  * If `timestamp.lt_now` and `timestamp.within` are both set, the `timestamp.lt_now_within` message is used.
+  * If `timestamp.within` is set without either `timestamp.gt_now` or `timestamp.lt_now`, the `timestamp.within` message is used.
 
 ### Message-Global
 
