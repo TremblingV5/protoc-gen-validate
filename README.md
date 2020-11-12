@@ -92,7 +92,7 @@ Error messages can be customized for your users.
 Each validation rule has a separate error message. Most error messages are simply keyed by
 their [constraint](#constraint-rules) code, e.g., `int32.lt`, `string.prefix`, or `bytes.max_len`.
 However, some error messages are unique based on a combination of constraints, such as having
-both `string.min_len` and `string.max_len` on a field; for these, a "synthetic" translation key
+both `string.min_len` and `string.max_len` on a field; for these, a "synthetic" customization key
 is created, such as `string.len_between`. These are documented alongside the [constraint rules](#constraint-rules).
 
 To create a new customization, create a `yaml` file. For example, to customize the error
@@ -326,7 +326,7 @@ Check the [constraint rule comparison matrix](rule_comparison.md) for language-s
   string x = 1 [(validate.rules).string = {min_len: 5, max_len: 10}];
   ```
 
-  *Translation notes*:
+  *Customization notes*:
   * The message used when both `string.min_len` and `string.max_len` are set is `string.len_between`.
   * If `string.min_len` and `string.max_len` are set to the same value, the `string.len` message is used.
 
@@ -340,7 +340,7 @@ Check the [constraint rule comparison matrix](rule_comparison.md) for language-s
   string x = 1 [(validate.rules).string = {min_bytes: 128, max_bytes: 1024}];
   ```
 
-  *Translation notes*:
+  *Customization notes*:
   * The message when both `string.min_bytes` and `string.max_bytes` are set is `string.bytes_between`.
   * If `string.min_bytes` and `string.max_bytes` are set to the same value, the `string.len_bytes` message is used.
 
@@ -425,7 +425,7 @@ Check the [constraint rule comparison matrix](rule_comparison.md) for language-s
   string x = 1 [(validate.rules).string {well_known_regex: HTTP_HEADER_VALUE, strict: false}];
   ```
 
-  *Translation notes*:
+  *Customization notes*:
   * There are two messages for `string.uri`. The secondary error message is used when a relative
     URI is given rather than an absolute URI. This is keyed by the `string.uri_absolute` message.
 
@@ -581,7 +581,7 @@ Person x = 1;
   repeated double x = 1 [(validate.rules).repeated = {min_items: 7, max_items: 7}];
   ```
 
-  *Translation notes*:
+  *Customization notes*:
   * The message used when both `repeated.min_items` and `repeated.max_items` are set is `repeated.items_between`.
   * If `repeated.min_items` and `repeated.max_items` are set to the same value, the `repeated.items` message is used.
 
@@ -617,7 +617,7 @@ Person x = 1;
   map<string, Person> x = 1 [(validate.rules)].map = {min_pairs: 7, max_pairs: 7}];
   ```
 
-  *Translation notes*:
+  *Customization notes*:
   * The message used when both `maps.min_pairs` and `maps.max_pairs` are set is `maps.pairs_between`.
   * If `maps.min_pairs` and `maps.max_pairs` are set to the same value, the `maps.pairs` message is used.
 
@@ -729,7 +729,7 @@ message X { google.protobuf.Int32Value age = 1 [(validate.rules).int32.gt = -1, 
     }];
   ```
 
-  *Translation notes*: The following messages are used:
+  *Customization notes*: The following messages are used:
   * `duration.valid` - Value must be parse-able as a valid duration object
   * `duration.between_open` (`lt` and `gt`) - Value must be inside the open interval `(x, y)` which excludes both endpoints
   * `duration.between_closed` (`lte` and `gte`) - Value must be inside the closed interval `[x, y]` which includes both endpoints
@@ -801,7 +801,7 @@ message X { google.protobuf.Int32Value age = 1 [(validate.rules).int32.gt = -1, 
     }];
   ```
 
-  *Translation notes*: The following messages are used:
+  *Customization notes*: The following messages are used:
   * `timestamp.valid` - Value must be parse-able as a valid duration object
   * `timestamp.between_open` (`lt` and `gt`) - Value must be inside the open interval `(x, y)` which excludes both endpoints
   * `timestamp.between_closed` (`lte` and `gte`) - Value must be inside the closed interval `[x, y]` which includes both endpoints
@@ -831,7 +831,7 @@ message X { google.protobuf.Int32Value age = 1 [(validate.rules).int32.gt = -1, 
     }];
   ```
 
-  *Translation notes*:
+  *Customization notes*:
   * If `timestamp.gt_now` and `timestamp.within` are both set, the `timestamp.gt_now_within` message is used.
   * If `timestamp.lt_now` and `timestamp.within` are both set, the `timestamp.lt_now_within` message is used.
   * If `timestamp.within` is set without either `timestamp.gt_now` or `timestamp.lt_now`, the `timestamp.within` message is used.

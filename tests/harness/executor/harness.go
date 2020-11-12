@@ -21,7 +21,6 @@ func Harnesses(goFlag, ccFlag, javaFlag, pythonFlag bool, externalHarnessFlag st
 	harnesses := make([]Harness, 0)
 	if goFlag {
 		harnesses = append(harnesses, InitHarness("tests/harness/go/main/go-harness").WithMsgTests())
-		harnesses = append(harnesses, InitHarness("tests/harness/go/main/go-harness").WithI18nTests())
 	}
 	if ccFlag {
 		harnesses = append(harnesses, InitHarness("tests/harness/cc/cc-harness"))
@@ -47,11 +46,6 @@ type Harness struct {
 
 func (h Harness) WithMsgTests() Harness {
 	h.TestErrMsgs = true
-	return h
-}
-
-func (h Harness) WithI18nTests() Harness {
-	h.TestI18n = true
 	return h
 }
 
