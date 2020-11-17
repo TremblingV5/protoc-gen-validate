@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+package tests.harness.cases_custom;
+option go_package = "cases_custom";
+
+import "validate/validate.proto";

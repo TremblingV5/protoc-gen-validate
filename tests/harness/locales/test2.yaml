@@ -1,0 +1,3 @@
+en-US:
+  string:
+#    len_between: value GIGGLE length must be between {{$1}} and {{$2}} characters, inclusive

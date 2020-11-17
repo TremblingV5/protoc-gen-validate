@@ -11,8 +11,11 @@ GO_IMPORT_SPACES := ${VALIDATE_IMPORT},\
 	Mgoogle/protobuf/struct.proto=github.com/golang/protobuf/ptypes/struct,\
 	Mgoogle/protobuf/timestamp.proto=github.com/golang/protobuf/ptypes/timestamp,\
 	Mgoogle/protobuf/wrappers.proto=github.com/golang/protobuf/ptypes/wrappers,\
-	Mgoogle/protobuf/descriptor.proto=github.com/golang/protobuf/protoc-gen-go/descriptor,\
+	Mgoogle/protobuf/descriptor.proto=github.com/golang/protobuf/protoc-gen-go/descriptor
 GO_IMPORT:=$(subst $(space),,$(GO_IMPORT_SPACES))
+
+PROTOC_GEN_VALIDATE_LOCALES_DIR := /go/src/github.com/envoyproxy/protoc-gen-validate/tests/harness/locales
+export PROTOC_GEN_VALIDATE_LOCALES_DIR
 
 .PHONY: build
 build: validate/validate.pb.go
@@ -74,6 +77,21 @@ testcases: bin/protoc-gen-go
 	mkdir tests/harness/cases/go
 	rm -r tests/harness/cases/other_package/go || true
 	mkdir tests/harness/cases/other_package/go
+	# copy test cases for custom error messages
+	rm -r tests/harness/cases_custom || true
+	cp -r tests/harness/cases tests/harness/cases_custom && \
+		cd tests/harness/cases_custom && \
+		sed -i'' -e 's/package tests.harness.cases;/package tests.harness.cases_custom;/' *.proto && \
+		sed -i'' -e 's/option go_package = "cases";/option go_package = "cases_custom";/' *.proto && \
+		sed -i'' -e 's/import "tests\/harness\/cases\/other_package\/embed.proto";/import "tests\/harness\/cases_custom\/other_package_custom\/other_embed.proto";/' *.proto && \
+		sed -i'' -e 's/tests.harness.cases.other_package.Embed/tests.harness.cases_custom.other_package_custom.Embed/' *.proto && \
+		sed -i'' -e 's/other_package.Embed/other_package_custom.Embed/' *.proto && \
+		for filename in *.proto; do mv "$$filename" "other_$$filename"; done
+	mv tests/harness/cases_custom/other_package tests/harness/cases_custom/other_package_custom && \
+		cd tests/harness/cases_custom/other_package_custom && \
+		sed -i'' -e 's/option go_package = "other_package";/option go_package = "other_package_custom";/' *.proto && \
+		sed -i'' -e 's/package tests.harness.cases.other_package;/package tests.harness.cases_custom.other_package_custom;/' *.proto && \
+		for filename in *.proto; do mv "$$filename" "other_$$filename"; done
 	# protoc-gen-go makes us go a package at a time
 	cd tests/harness/cases/other_package && \
 	protoc \
@@ -91,6 +109,25 @@ testcases: bin/protoc-gen-go
 		--plugin=protoc-gen-go=$(shell pwd)/bin/protoc-gen-go \
 		--validate_out="lang=go,Mtests/harness/cases/other_package/embed.proto=${PACKAGE}/tests/harness/cases/other_package/go:./go" \
 		./*.proto
+	# generate for custom error messages
+	cd tests/harness/cases_custom/other_package_custom && \
+	protoc \
+		-I . \
+		-I ../../../.. \
+		--go_out="${GO_IMPORT}:./go" \
+		--plugin=protoc-gen-go=$(shell pwd)/bin/protoc-gen-go \
+		--validate_out="lang=go:./go" \
+		./*.proto && \
+	cd go && sed -i'' -e 's/	\(.*\) "tests\/harness\/\(.*\)"/\1 "github.com\/envoyproxy\/protoc-gen-validate\/tests\/harness\/\2\/go"/' *.go
+	cd tests/harness/cases_custom && \
+	protoc \
+		-I . \
+		-I ../../.. \
+		--go_out="Mtests/harness/cases_custom/other_package_custom/embed.proto=${PACKAGE}/tests/harness/cases_custom/other_package_custom/go,${GO_IMPORT}:./go" \
+		--plugin=protoc-gen-go=$(shell pwd)/bin/protoc-gen-go \
+		--validate_out="lang=go,Mtests/harness/cases_custom/other_package_custom/embed.proto=${PACKAGE}/tests/harness/cases_custom/other_package_custom/go:./go" \
+		./*.proto && \
+	cd go && sed -i'' -e 's/	\(.*\) "tests\/harness\/\(.*\)"/\1 "github.com\/envoyproxy\/protoc-gen-validate\/tests\/harness\/\2\/go"/' *.go
 
 validate/validate.pb.go: bin/protoc-gen-go validate/validate.proto
 	cd validate && protoc -I . \
@@ -134,3 +171,5 @@ clean:
 	rm -rf \
 		tests/harness/cases/go \
 		tests/harness/cases/other_package/go
+
+

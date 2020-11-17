@@ -85,6 +85,35 @@ make build
   - `java`
   - `python`
 
+### Error Customization
+
+Error messages can be customized for your users.
+
+Each validation rule has a separate error message. Most error messages are simply keyed by
+their [constraint](#constraint-rules) code, e.g., `int32.lt`, `string.prefix`, or `bytes.max_len`.
+However, some error messages are unique based on a combination of constraints, such as having
+both `string.min_len` and `string.max_len` on a field; for these, a "synthetic" customization key
+is created, such as `string.len_between`. These are documented alongside the [constraint rules](#constraint-rules).
+
+To create a new customization, create a `yaml` file. For example, to customize the error
+messages for the `string.len_between` and `string.pattern` rules, your file should contain:
+
+```yaml
+en-US:
+  string:
+    len_between: must be between {{$1}} and {{$2}} characters, inclusive
+    pattern: string doesn't match expected pattern
+```
+
+(Note that this `en-US` header is because we use an internationalization library for compile-time error customization)
+
+There are two things to notice from this example:
+1. messages may be parameterized with one or more parameters using syntax like `{{$1}}`
+2. messages may safely exclude any passed parameter, as shown in the `pattern` example
+
+Pro-Tip: By looking through the test cases at `tests/harness/executor/cases.go`, you can see
+what the error messages will look like by default and decide which ones to customize.
+
 ### Examples
 
 #### Go
@@ -297,6 +326,10 @@ Check the [constraint rule comparison matrix](rule_comparison.md) for language-s
   string x = 1 [(validate.rules).string = {min_len: 5, max_len: 10}];
   ```
 
+  *Customization notes*:
+  * The message used when both `string.min_len` and `string.max_len` are set is `string.len_between`.
+  * If `string.min_len` and `string.max_len` are set to the same value, the `string.len` message is used.
+
 - **min_bytes/max_bytes**: these rules constrain the number of bytes in the field.
 
   ```protobuf
@@ -306,6 +339,10 @@ Check the [constraint rule comparison matrix](rule_comparison.md) for language-s
   // x must be between 128 and 1024 bytes long
   string x = 1 [(validate.rules).string = {min_bytes: 128, max_bytes: 1024}];
   ```
+
+  *Customization notes*:
+  * The message when both `string.min_bytes` and `string.max_bytes` are set is `string.bytes_between`.
+  * If `string.min_bytes` and `string.max_bytes` are set to the same value, the `string.len_bytes` message is used.
 
 - **pattern**: the field must match the specified [RE2-compliant][re2] regular expression. The included expression should elide any delimiters (ie, `/\d+/` should just be `\d+`).
 
@@ -387,6 +424,10 @@ Check the [constraint rule comparison matrix](rule_comparison.md) for language-s
   // x must conform to a well known regex for headers, disallowing \r\n\0 characters.
   string x = 1 [(validate.rules).string {well_known_regex: HTTP_HEADER_VALUE, strict: false}];
   ```
+
+  *Customization notes*:
+  * There are two messages for `string.uri`. The secondary error message is used when a relative
+    URI is given rather than an absolute URI. This is keyed by the `string.uri_absolute` message.
 
 ### Bytes
 
@@ -540,6 +581,10 @@ Person x = 1;
   repeated double x = 1 [(validate.rules).repeated = {min_items: 7, max_items: 7}];
   ```
 
+  *Customization notes*:
+  * The message used when both `repeated.min_items` and `repeated.max_items` are set is `repeated.items_between`.
+  * If `repeated.min_items` and `repeated.max_items` are set to the same value, the `repeated.items` message is used.
+
 - **unique**: this rule requires that all elements in the field must be unique. This rule does not support repeated messages.
 
   ```protobuf
@@ -571,6 +616,10 @@ Person x = 1;
   // x must contain exactly 7 KV pairs
   map<string, Person> x = 1 [(validate.rules)].map = {min_pairs: 7, max_pairs: 7}];
   ```
+
+  *Customization notes*:
+  * The message used when both `maps.min_pairs` and `maps.max_pairs` are set is `maps.pairs_between`.
+  * If `maps.min_pairs` and `maps.max_pairs` are set to the same value, the `maps.pairs` message is used.
 
 - **no_sparse**: for map fields with message values, setting this rule to true disallows keys with unset values.
 
@@ -680,6 +729,17 @@ message X { google.protobuf.Int32Value age = 1 [(validate.rules).int32.gt = -1, 
     }];
   ```
 
+  *Customization notes*: The following messages are used:
+  * `duration.valid` - Value must be parse-able as a valid duration object
+  * `duration.between_open` (`lt` and `gt`) - Value must be inside the open interval `(x, y)` which excludes both endpoints
+  * `duration.between_closed` (`lte` and `gte`) - Value must be inside the closed interval `[x, y]` which includes both endpoints
+  * `duration.between_include_left` (`lt` and `gte`) - Value must be inside the half-open interval `[x, y)` which includes the left endpoint
+  * `duration.between_include_right` (`lte` and `gt`) - Value must be inside the half-open interval `(x, y]` which includes the right endpoint
+  * `duration.outside_open` (`lte` and `gte`) - Value must be outside the open interval `(x, y)` which excludes both endpoints
+  * `duration.outside_closed` (`lt` and `gt`) - Value must be outside the closed interval `[x, y]` which includes both endpoints
+  * `duration.outside_include_right` (`lte` and `gt`) - Value must be outside the half-open interval `[x, y)` which includes the left endpoint
+  * `duration.outside_include_left` (`lt` and `gte`) - Value must be outside the half-open interval `(x, y]` which includes the right endpoint
+
 - **in/not_in**: these two rules permit specifying white/blacklists for the values of a field.
 
   ```protobuf
@@ -741,6 +801,17 @@ message X { google.protobuf.Int32Value age = 1 [(validate.rules).int32.gt = -1, 
     }];
   ```
 
+  *Customization notes*: The following messages are used:
+  * `timestamp.valid` - Value must be parse-able as a valid duration object
+  * `timestamp.between_open` (`lt` and `gt`) - Value must be inside the open interval `(x, y)` which excludes both endpoints
+  * `timestamp.between_closed` (`lte` and `gte`) - Value must be inside the closed interval `[x, y]` which includes both endpoints
+  * `timestamp.between_include_left` (`lt` and `gte`) - Value must be inside the half-open interval `[x, y)` which includes the left endpoint
+  * `timestamp.between_include_right` (`lte` and `gt`) - Value must be inside the half-open interval `(x, y]` which includes the right endpoint
+  * `timestamp.outside_open` (`lte` and `gte`) - Value must be outside the open interval `(x, y)` which excludes both endpoints
+  * `timestamp.outside_closed` (`lt` and `gt`) - Value must be outside the closed interval `[x, y]` which includes both endpoints
+  * `timestamp.outside_include_right` (`lte` and `gt`) - Value must be outside the half-open interval `[x, y)` which includes the left endpoint
+  * `timestamp.outside_include_left` (`lt` and `gte`) - Value must be outside the half-open interval `(x, y]` which includes the right endpoint
+
 - **lt_now/gt_now**: these inequalities allow for ranges relative to the current time. These rules cannot be used with the absolute rules above.
 
   ```protobuf
@@ -759,6 +830,11 @@ message X { google.protobuf.Int32Value age = 1 [(validate.rules).int32.gt = -1, 
       within: {seconds: 3600}
     }];
   ```
+
+  *Customization notes*:
+  * If `timestamp.gt_now` and `timestamp.within` are both set, the `timestamp.gt_now_within` message is used.
+  * If `timestamp.lt_now` and `timestamp.within` are both set, the `timestamp.lt_now_within` message is used.
+  * If `timestamp.within` is set without either `timestamp.gt_now` or `timestamp.lt_now`, the `timestamp.within` message is used.
 
 ### Message-Global
 
@@ -856,3 +932,4 @@ docker run --rm \
 [pg*]:             https://github.com/lyft/protoc-gen-star
 [re2]:             https://github.com/google/re2/wiki/Syntax
 [wkts]:            https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
+

@@ -13,7 +13,7 @@ const messageTpl = `
 			mask = m.updateMask(mask, "{{ $f.Name }}")
 
 			if err := v.ValidateWithMask(mask); err != nil {
-				return {{ errCause . "err" "embedded message failed validation" }}
+				return {{ errCause . "err" (t "<prefix>.message" "embedded message failed validation") }}
 			}
 		}
 	{{ end }}

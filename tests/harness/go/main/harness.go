@@ -34,7 +34,7 @@ func main() {
 
 	if isIgnored {
 		// confirm that ignored messages don't have a validate method
-		if _, ok := da.Message.(interface {Validate() error}); hasValidate && ok {
+		if hasValidate {
 			err = fmt.Errorf("ignored message has Validate() method")
 		}
 	} else if !hasValidate {
