@@ -41,6 +41,7 @@ type Harness struct {
 	Name        string
 	Exec        func(context.Context, io.Reader) (*harness.TestResult, error)
 	TestErrMsgs bool
+	TestI18n    bool
 }
 
 func (h Harness) WithMsgTests() Harness {

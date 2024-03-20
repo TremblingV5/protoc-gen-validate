@@ -28,7 +28,7 @@ func execTestCase(tc TestCase, harnesses []Harness) (ok, skip bool) {
 		return false, false
 	}
 
-	b, err := proto.Marshal(&harness.TestCase{Message: any})
+	b, err := proto.Marshal(&harness.TestCase{Message: any, Mask: tc.Mask})
 	if err != nil {
 		log.Printf("unable to marshal test case %q - %v", tc.Name, err)
 		return false, false
@@ -66,7 +66,7 @@ func execTestCase(tc TestCase, harnesses []Harness) (ok, skip bool) {
 
 				}
 			} else if h.TestErrMsgs && res.Reason != tc.ErrorMsg {
-				errs <- fmt.Errorf("%s: expected error = %s, but got reason %s", h.Name, tc.ErrorMsg, res.Reason)
+				errs <- fmt.Errorf("%s: expected error msg = %s, but got reason %s", h.Name, tc.ErrorMsg, res.Reason)
 			}
 		}()
 	}

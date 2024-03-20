@@ -37,6 +37,7 @@ func Register(tpl *template.Template, params pgs.Parameters) {
 		"durLit":        fns.durLit,
 		"durStr":        fns.durStr,
 		"err":           fns.err,
+		"errf":          fns.errf,
 		"errCause":      fns.errCause,
 		"errIdx":        fns.errIdx,
 		"errIdxCause":   fns.errIdxCause,
@@ -45,6 +46,7 @@ func Register(tpl *template.Template, params pgs.Parameters) {
 		"inType":        fns.inType,
 		"isBytes":       fns.isBytes,
 		"lit":           fns.lit,
+		"regexLit":      fns.regexLit,
 		"lookup":        fns.lookup,
 		"msgTyp":        fns.msgTyp,
 		"name":          fns.Name,
@@ -57,6 +59,7 @@ func Register(tpl *template.Template, params pgs.Parameters) {
 		"unwrap":        fns.unwrap,
 		"externalEnums": fns.externalEnums,
 		"enumPackages":  fns.enumPackages,
+		"coalesce":      fns.coalesce,
 	})
 
 	i18nBuilder := fns.buildFuncFactory()
@@ -161,6 +164,10 @@ func (fns goSharedFuncs) errIdx(ctx shared.RuleContext, idx string, reason ...in
 	return fns.errIdxCause(ctx, idx, "nil", reason...)
 }
 
+func (fns goSharedFuncs) errf(ctx shared.RuleContext, reasonFmt string, reasonArgs ...interface{}) string {
+	return fns.errIdxCause(ctx, "", "nil", fmt.Sprintf(reasonFmt, reasonArgs...))
+}
+
 func (fns goSharedFuncs) lookup(f pgs.Field, name string) string {
 	return fmt.Sprintf(
 		"_%s_%s_%s",
@@ -195,6 +202,10 @@ func (fns goSharedFuncs) lit(x interface{}) string {
 	default:
 		return fmt.Sprint(x)
 	}
+}
+
+func (fns goSharedFuncs) regexLit(s string) string {
+	return strings.ReplaceAll(fns.lit(s), "\\\\", "\\")
 }
 
 func (fns goSharedFuncs) isBytes(f interface {
@@ -340,10 +351,31 @@ func (fns goSharedFuncs) buildFuncFactory() func(translationKeyPrefix string) te
 	I18n := i18n.New(yaml.New(os.Getenv(envVarLocalesDir)))
 	locale := os.Getenv(envVarLocaleChoice)
 	return func(translationKeyPrefix string) template.FuncMap {
-		return template.FuncMap{"t": func(key string, value string, args ...interface{}) string {
-			key = strings.ReplaceAll(key, "<prefix>", translationKeyPrefix)
-			trln := I18n.Default(value).T(locale, key, args...)
-			return html.UnescapeString(string(trln)) // i18n assumes an HTML context but we're context-agnostic
-		}}
+		return template.FuncMap{
+			"t": func(key string, value string, args ...interface{}) string {
+				key = strings.ReplaceAll(key, "<prefix>", translationKeyPrefix)
+				trln := I18n.Default(value).T(locale, key, args...)
+				return html.UnescapeString(string(trln)) // i18n assumes an HTML context but we're context-agnostic
+			},
+			"tOverride": func(key string, value1 string, value2 string, args ...interface{}) string {
+				key = strings.ReplaceAll(key, "<prefix>", translationKeyPrefix)
+				// apply override
+				var value = value2
+				if value1 != "" {
+					value = value1
+				}
+				trln := I18n.Default(value).T(locale, key, args...)
+				return html.UnescapeString(string(trln)) // i18n assumes an HTML context but we're context-agnostic
+			},
+		}
+ 	}
+}
+
+func (fns goSharedFuncs) coalesce(values ...string) string {
+	for _, val := range values {
+		if val != "" {
+			return val
+		}
 	}
+	return values[len(values)-1]
 }

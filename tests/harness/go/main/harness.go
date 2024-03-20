@@ -12,6 +12,7 @@ import (
 	"github.com/envoyproxy/protoc-gen-validate/tests/harness/go"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
+	"google.golang.org/genproto/protobuf/field_mask"
 )
 
 func main() {
@@ -23,11 +24,12 @@ func main() {
 
 	da := new(ptypes.DynamicAny)
 	checkErr(ptypes.UnmarshalAny(tc.Message, da))
+	mask := tc.Mask
 
 	_, isIgnored := da.Message.(*cases.MessageIgnored)
 
 	msg, hasValidate := da.Message.(interface {
-		Validate() error
+		ValidateWithMask(*field_mask.FieldMask) error
 	})
 
 	if isIgnored {
@@ -38,7 +40,7 @@ func main() {
 	} else if !hasValidate {
 		err = fmt.Errorf("non-ignored message is missing Validate()")
 	} else {
-		err = msg.Validate()
+		err = msg.ValidateWithMask(mask)
 	}
 	checkValid(err)
 }

@@ -1,0 +1,10 @@
+en-US:
+  string:
+#    len_between: value GARBLE length must be between {{$1}} and {{$2}} characters, inclusive
+#    pattern: string doesn't match pattern CHICKEN
+  map:
+    max_pairs: value must not be more than {{$1}} pair(s)
+
+fake-IT:
+  map:
+    max_pairs: valuezz must not be more than {{$1}} pair(s)
